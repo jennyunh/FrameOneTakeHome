@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@600;700;800&family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap');
+
+#leaderboard-wrapper {
+    display: flex;
+    flex-flow: column;
+    /* Change to column layout for easier vertical alignment */
+    justify-content: space-between;
+    align-items: center;
+    /* background:rgb(115, 108, 204); */
+    border-radius: 4vmin;
+    width: 70vmin;
+    margin: 8vmin auto auto auto;
+    padding: 0 6vmin 0 6vmin;
+    transition: opacity 2s ease-in-out;
+
+}
+
+
+
+#dark-category-bar {
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: stretch;
+    justify-content: space-evenly;
+    color: #ffffff;
+
+}
+
+#dark-category-title{
+    color: white;
+}
+
+
+
+.dark-leaderboard-section{
+    color: #ffffff;
+}
+
+.dark-motion-div{
+    background: #2b2a31;
+}
+
+.dark-motion-div:hover {
+    box-shadow: none;
+}
+
+
+
+#EXP_title, #dark-EXP, #members_title, #dark-members {
+    flex: 0.5
+}
+
+
+#dark-logo {
+    flex: 0.5;
+    height: 100%;
+    object-fit: cover;
+}
+
+#dark-community {
+    flex: 1;
+    text-align: center;
+}
+
+#dark-rank {
+    font-weight: 800;
+    font-size: 4.5vmin;
+    font-family: 'Poppins', 'Overpass', sans-serif;
+    padding: 0;
+    margin: 0;
+}
+
+.leaderboard-unit:hover #dark-rank,
+.leaderboard-unit:hover #dark-community,
+.leaderboard-unit:hover #dark-members,
+.leaderboard-unit:hover #dark-EXP{
+    color: #6d5dfc;
+}
+
+#dark-rank {
+    flex: 0.5;
+}
+
+

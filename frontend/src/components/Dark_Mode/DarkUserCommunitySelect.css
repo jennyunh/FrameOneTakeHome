@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@600;700;800&family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap');
+
+#dark-join-button {
+    background-color: rgb(97, 87, 203);
+    color: #ffffff;
+    border: none;
+}
+
+
+#dark-join-button, #dark-leave-button{
+    margin: 10px;
+    transition: all 250ms ease-in-out;
+border-radius: 3vmin;
+}
+
+#dark-join-button:hover {
+    background: rgb(111, 102, 207);
+    border: none !important;
+    color: #ffffff;
+}
+
+#dark-leave-button {
+    background-color: rgb(97, 87, 203);
+    color: #ffffff;
+    border: none;
+}
+
+
+#dark-leave-button:hover {
+    background: rgb(111, 102, 207);
+    color: #ffffff;
+}
+
+
+
+.dark-select{
+    background-color: #313037;
+    color: #ffffff !important;
+    border-radius: 3vmin !important;
+}
+
+
+.dark-select::placeholder {
+    color: #ffffff;
+}
+
+.dark-select:hover {
+    outline: none;
+    /* box-shadow: inset 0.2rem 0.2rem 0.8rem #c8d0e7, inset -0.2rem -0.2rem 0.6rem white; */
+}
+
+
+
+#dark-options-container {
+    color: #7784a5;
+    border-radius: 3vmin;
+    background: #2b2a31;
+}
+
+
+.dark-label{
+    color: white;
+}
+

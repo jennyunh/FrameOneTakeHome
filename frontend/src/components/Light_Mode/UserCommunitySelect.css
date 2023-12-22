@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@600;700;800&family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap');
+
+#join-button {
+    background-color: #e0e5ec;
+    color: #7784a5;
+    box-shadow: 0.3rem 0.3rem 0.6rem #c8d0e7, -0.2rem -0.2rem 0.5rem white;
+    border: none;
+}
+
+.join-button, .leave-button {
+    margin: 10px;
+    transition: all 250ms ease-in-out;
+    width: 12vmin;
+    min-width: 70px;
+    height: auto;
+    font-size: 2vmin;
+}
+
+#join-button:hover {
+    box-shadow: inset 0.2rem 0.2rem 0.5rem #c8d0e7, inset -0.2rem -0.2rem 0.5rem white;
+    border: none !important;
+    color: #6d5dfc;
+}
+
+#leave-button {
+    background-color: #e0e5ec;
+    box-shadow: 0.3rem 0.3rem 0.6rem #c8d0e7, -0.2rem -0.2rem 0.5rem white;
+    color: #7784a5;
+    border: none;
+}
+
+
+#leave-button:hover {
+    box-shadow: inset 0.2rem 0.2rem 0.5rem #c8d0e7, inset -0.2rem -0.2rem 0.5rem white;
+    color: #6d5dfc;
+}
+
+label {
+    display: block;
+    margin: 10px 0;
+}
+
+.select {
+    box-shadow: inset 0.2rem 0.2rem 0.5rem #c8d0e7, inset -0.2rem -0.2rem 0.5rem white;
+    background: none;
+    color: #7784a5 !important;
+    border-radius: 1.5vmin !important;
+}
+
+select {
+    width: 50vmin;
+    border: none !important;
+    font-size: 1.7vmin !important;
+    transition: all 250ms ease-in-out;
+    /* Safari */
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+
+.select::placeholder {
+    color: #bec8e4;
+}
+
+.select:hover {
+    outline: none;
+    box-shadow: inset 0.2rem 0.2rem 0.8rem #c8d0e7, inset -0.2rem -0.2rem 0.6rem white;
+}
+
+
+#options-container {
+    color: #7784a5;
+    background-color: #E4EBF5;
+    box-shadow: 0.3rem 0.3rem 0.6rem #c8d0e7, -0.2rem -0.2rem 0.5rem rgba(255, 255, 255, 0.5);
+    border-radius: 2.2vmin;
+}
+
+.options-container {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-weight: 700;
+    width: 60vmin;
+    padding: 5vmin;
+    margin: 4vmin auto 6vmin auto;
+    font-family: 'Poppins', 'Overpass', Arial, Helvetica, sans-serif;
+}
+
+
+
+#button-container {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+}
+
+
+label {
+    width: 50vmin;
+    text-align: left;
+
+}
