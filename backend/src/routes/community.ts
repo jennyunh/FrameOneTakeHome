@@ -1,6 +1,6 @@
 import express from "express";
 import { CommunityModel } from "../models/Community";
-
+import { UserModel } from "../models/User";
 
 const communityRouter = express.Router();
 
@@ -37,6 +37,126 @@ const getCommunities = async (sortCriteria: any) => {
 
 
 
+
+//Aggregation pipeline that takes a month,
+//and creates an array  of communities with the total points for that month
+//can map out the array in the front end.
+const getPointsByMonth = async (month: number) => {
+
+
+	return await UserModel.aggregate([
+
+		{
+			//get all user documents with a community id.
+			$match: {
+				communityId: { $ne: "" }
+			}
+		},
+
+		{
+
+			//flatten the experiencePoints array
+			$unwind: {
+				path: "$experiencePoints",
+			}
+		},
+
+
+		{
+			//find all experiencePoints instances with a timestamp of the selected month
+			$match: {
+				$expr: {
+					$eq: [{ $month: "$experiencePoints.timestamp" }, month]
+				}
+			}
+		},
+
+		{
+			$group: {
+				_id: "$communityId",
+				totalPoints: {
+					$sum: "$experiencePoints.points"
+				}
+			}
+		},
+
+		{
+			$addFields: {
+				objectCommunityId: { $toObjectId: "$_id" }
+			}
+		},
+
+
+		{
+			$lookup: {
+				from: "communities", // Change this to the actual name of your CommunityModel collection
+				localField: "objectCommunityId",
+				foreignField: "_id",
+				as: "result",
+			},
+		},
+
+		{
+			$unwind: "$result",
+		},
+
+		{
+			$addFields: {
+				name: "$result.name",
+				logo: "$result.logo",
+				totalMembers: "$result.totalMembers"
+			}
+		},
+	{
+		$sort: {
+			totalPoints: -1
+			}
+	}
+
+
+
+
+	]);
+
+}
+
+
+
+
+
+/**
+ * @route GET /community/bymonth?month=5
+ * @param {number} month - month
+ * @returns {Array} - array of Community objects with total number of points for that month
+ */
+
+communityRouter.get("/bymonth", async (req, res) => {
+
+	try {
+		const month = Number(req.query.month);
+
+		if (!month || month < 1 || month > 12) {
+			return res.status(400).send({ message: "Invalid month value" });
+		}
+
+		const pointsByMonth = await getPointsByMonth(month);
+
+		res.send(pointsByMonth);
+	} catch (error) {
+		console.error(error);
+		res.status(500).send({ message: "Internal Server Error" });
+	}
+
+
+});
+
+
+
+
+
+
+
+
 /*
  * @route GET /community/ascending
  * @returns {Array} - array of Community objects in ALPHABETICAL order
@@ -69,13 +189,6 @@ communityRouter.get("/ranked", async (_, res) => {
 
 
 });
-
-
-/**
- * @route GET /community/:month
- * @param {number} month - Community ID
- * @returns {Array} - array of Community objects with total number of points for that month
- */
 
 
 
