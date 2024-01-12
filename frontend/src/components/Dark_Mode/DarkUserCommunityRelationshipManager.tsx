@@ -128,7 +128,7 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
             //if the selected user has a community, and it is the same as the selected community,
             //throw an error "You are already a member of this community"
-            if (theSelectedUser && theSelectedUser.communityName === theSelectedCommunity.name) {
+            if (theSelectedUser && theSelectedUser.communityId === theSelectedCommunity._id) {
                 toast.error("You are already a member of this community")
             }
 
@@ -136,7 +136,7 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
             //else if the user has a community that's not the same as the selected community,
             //prompt a join confirmation popup:
             //"You can join only one community at a time. Would you like to leave your community and join the selected community?""
-            else if (theSelectedUser && theSelectedUser.communityName) {
+            else if (theSelectedUser && theSelectedUser.communityId) {
                 setConfirmJoin(true);
             }
 
@@ -179,16 +179,17 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
             //find the selected user and community in the data
             const theSelectedUser = users.find((user: User) => user._id === selectedUser)
             const theSelectedCommunity = communities.find((community: Community) => community._id === selectedCommunity)
+const users_community = communities.find((community: Community) => community._id === theSelectedUser.communityId)
 
             //check if the user has a community to leave. If not, show error popup
-            if (!theSelectedUser.communityName) {
+            if (!theSelectedUser.communityId) {
                 toast.error("You do not have a community to leave. Please join a community.")
             }
 
             //Else if the selected community is NOT the same as the community the user joined,
             //throw error
-            else if (theSelectedCommunity.name !== theSelectedUser.communityName) {
-                toast.error("This is not the community you joined\n You are a member of: " + theSelectedUser.communityName)
+            else if (theSelectedCommunity._id !== theSelectedUser.communityId) {
+                toast.error("This is not the community you joined\n You are a member of: " + users_community.name)
             }
 
             //else prompt a leave confirmation popup

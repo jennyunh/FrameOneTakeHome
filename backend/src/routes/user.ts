@@ -39,7 +39,7 @@ userRouter.get("/", async (_, res) => {
 				_id: "$_id",
 				email: { $first: "$email" },
 				profilePicture: { $first: "$profilePicture" },
-				communityName: { $first: "$communityName" },
+				communityId: { $first: "$communityId" },
 				totalExperience: { $sum: "$experiencePoints.points" }
 			}
 		}
@@ -66,40 +66,46 @@ userRouter.post("/:userId/join/:communityId", async (req, res) => {
 
 	//FIND the user and community by id in the database
 	const user = await UserModel.findById(userId).select('+experiencePoints');
-	const community = await CommunityModel.findById(communityId).select("+members");
-
 
 	//ERROR if no user found
 	if (!user) {
 		return res.status(404).send({ message: "User not found" });
 	}
 
-	//ERROR if no community found
-	if (!community) {
-		return res.status(404).send({ message: "Community not found" });
-	}
-
-	const userPoints = user.experiencePoints?.reduce((total, experience) => total + experience.points, 0);
-
-
-
-
-
 	//IF user has NOT joined a community, let them join a community
-	if (!user.communityName) {
+	if (!user.communityId) {
 
-		//update the user's community name field
-		await UserModel.findByIdAndUpdate(userId, { communityName: community.name })
+		//update the user's community id field
+		await UserModel.findByIdAndUpdate(userId, { communityId: communityId })
 
 
-		//! tells TS that members array will exist (empty array by default)
-		let arr = community.members!
+		//recalculate total members for the community data
+		await CommunityModel.findByIdAndUpdate(communityId,
+			{ $inc: { totalMembers: 1 } })
 
-		//push a new member onto the members array
-		arr.push({ member: user.email, totalPoints: userPoints, timestamp: new Date() })
 
-		//add member to the new community's members array
-		await CommunityModel.findByIdAndUpdate(communityId, { members: arr })
+		//recalculate total points for the community
+		const aggregateResult = await UserModel.aggregate([
+			{
+				$match: { communityId: communityId } // Match users belonging to the specific community
+			},
+			{
+				$unwind: "$experiencePoints" // Unwind the experiencePoints array
+			  },
+			{
+				$group: {
+					_id: null,
+					totalPoints: { $sum: "$experiencePoints.points" } // Sum up experiencePoints for all users
+				}
+			}
+		]);
+
+
+		await CommunityModel.findByIdAndUpdate(
+			communityId,
+			{ totalPoints: aggregateResult[0].totalPoints }
+		);
+
 
 
 		//SUCCESS
@@ -108,28 +114,66 @@ userRouter.post("/:userId/join/:communityId", async (req, res) => {
 
 
 	//else if the user does have a community 
-	else if (user.communityName) {
-
-		let oldCommunity = user.communityName;
-
-		//delete the member from the old community's members list
-		await CommunityModel.updateOne(
-			{ name: oldCommunity },
-			{ $pull: { members: { member: user.email } } }
-		);
-
-		//update the user's community name field with the new community name
-		await UserModel.findByIdAndUpdate(userId, { communityName: community.name })
+	else if (user.communityId) {
 
 
-		//! tells TS that members array will not be undefined
-		let arr = community.members!
+		//update the user's community id field with the new community id
+		await UserModel.findByIdAndUpdate(userId, { communityId: communityId })
 
-		//push a new member onto the members array
-		arr.push({ member: user.email, timestamp: new Date() })
 
-		//add member to the new community's members array.
-		await CommunityModel.findByIdAndUpdate(communityId, { members: arr })
+		let oldCommunity = user.communityId;
+
+		//recalculate total members for old community
+		await CommunityModel.findByIdAndUpdate(oldCommunity,
+			{ $dec: { totalMembers: 1 } })
+
+		//recalculate total members for the community data
+		await CommunityModel.findByIdAndUpdate(communityId,
+			{ $inc: { totalMembers: 1 } })
+
+
+		//recalculate total points for the old community
+		const oldTotalPoints = await UserModel.aggregate([
+			{
+				$match: { communityId: oldCommunity } // Match users belonging to the specific community
+			},
+			{
+				$unwind: "$experiencePoints" // Unwind the experiencePoints array
+			  },
+			{
+				$group: {
+					_id: null,
+					totalPoints: { $sum: "$experiencePoints.points" } // Sum up experiencePoints for all users
+				}
+			}
+		]);
+
+
+				//recalculate total points for the new community
+				const newTotalPoints = await UserModel.aggregate([
+					{
+						$match: { communityId: communityId } // Match users belonging to the specific community
+					},
+					{
+						$unwind: "$experiencePoints" // Unwind the experiencePoints array
+					  },
+					{
+						$group: {
+							_id: null,
+							totalPoints: { $sum: "$experiencePoints.points" } // Sum up experiencePoints for all users
+						}
+					}
+				]);
+
+				await CommunityModel.findByIdAndUpdate(
+					oldCommunity,
+					{ totalPoints: oldTotalPoints[0].totalPoints }
+				);
+
+				await CommunityModel.findByIdAndUpdate(
+					communityId,
+					{ totalPoints: newTotalPoints[0].totalPoints }
+				);
 
 
 		//SUCCESS
@@ -160,7 +204,7 @@ userRouter.delete("/:userId/leave/:communityId", async (req, res) => {
 
 	//FIND the user id and community id in the database
 	const user = await UserModel.findById(userId).select('+experiencePoints');
-	const community = await CommunityModel.findById(communityId).select("+members");
+	const community = await CommunityModel.findById(communityId);
 
 	//ERROR if no user found
 	if (!user) {
@@ -175,22 +219,48 @@ userRouter.delete("/:userId/leave/:communityId", async (req, res) => {
 
 
 	//if user has joined a community
-	if (user?.communityName) {
+	if (user.communityId) {
 
-		//make the user's community name to a blank string ""
-		await UserModel.findByIdAndUpdate(userId, { communityName: "" })
+		//recalculate the old community's totalMembers
+		await CommunityModel.findByIdAndUpdate(communityId,
+			{ $dec: { totalMembers: 1 } })
+
+
+		//update the user's community id
+		await UserModel.findByIdAndUpdate(userId, { communityId: "" })
 
 		//wipe out the user's experience points for that community
 		await UserModel.findByIdAndUpdate(userId, { experiencePoints: [] })
 
 
-		let memberToDelete = user.email;
 
+		//recalculate total points for the old community
+		const updatedTotalPoints = await UserModel.aggregate([
+			{
+				$match: { communityId: communityId } // Match users belonging to the specific community
+			},
+			{
+				$unwind: "$experiencePoints" // Unwind the experiencePoints array
+			  },
+			{
+				$group: {
+					_id: null,
+					totalPoints: { $sum: "$experiencePoints.points" } // Sum up experiencePoints for all users
+				}
+			}
+		]);
 
-		//update the community's members array by pulling out the member to delete.
-		await CommunityModel.findByIdAndUpdate(communityId, { $pull: { members: { member: memberToDelete } } })
+		if (updatedTotalPoints[0]) {
+			await CommunityModel.findByIdAndUpdate(
+			  communityId,
+			  { totalPoints: updatedTotalPoints[0].totalPoints }
+			);
+		  } else {
+			// Handle the case where updatedTotalPoints[0] is undefined
+			console.error("No aggregate result found");
+		  }
 
-
+		
 		//SUCCESS
 		return res.status(200).send();
 

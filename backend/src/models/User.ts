@@ -10,9 +10,9 @@ class User {
 	@prop()
 	public profilePicture?: string;
 
-	//name of community joined
+	//id of community joined
 	@prop()
-	public communityName?: string;
+	public communityId?: string;
 
 	@prop({ required: true, select: false, default: [] })
 	public experiencePoints?: { points: number, timestamp: Date }[];

@@ -6,31 +6,15 @@ const communityRouter = express.Router();
 
 
 
+
+
+
 // Common function for the GET communities aggregation pipeline
 //function takes a sorting criteria and returns the appropriate aggregation pipeline
 //allows for sorting communities by alphetical or descending total points order.
 const getCommunities = async (sortCriteria: any) => {
 	return await CommunityModel.aggregate([
 
-		//add a field "numberOfMembers": counts how many members objects are in the members array
-		{
-			$addFields: {
-				numberOfMembers: {
-					$size: {
-						$ifNull: ["$members", []]
-					}
-				}
-			}
-		},
-
-
-		//flatten by creating doc for every members object
-		{
-			$unwind: {
-				path: "$members",
-				preserveNullAndEmptyArrays: true
-			}
-		},
 
 		//group by id
 		//take first name, first logo, first numberOfMembers field encountered for each group of ids
@@ -39,8 +23,8 @@ const getCommunities = async (sortCriteria: any) => {
 				_id: "$_id",
 				name: { $first: "$name" },
 				logo: { $first: "$logo" },
-				totalPoints: { $sum: "$members.totalPoints" },
-				numberOfMembers: { $first: "$numberOfMembers" }
+				totalPoints: { $first: "$totalPoints" },
+				totalMembers: { $first: "$totalMembers" }
 			}
 		},
 
@@ -71,7 +55,7 @@ communityRouter.get("/alphabetical", async (_, res) => {
 
 
 /*
-* @route GET /community/descending
+* @route GET /community/ranked
 * @returns {Array} - array of Community objects in DESCENDING total points order
 */
 communityRouter.get("/ranked", async (_, res) => {
@@ -86,6 +70,12 @@ communityRouter.get("/ranked", async (_, res) => {
 
 });
 
+
+/**
+ * @route GET /community/:month
+ * @param {number} month - Community ID
+ * @returns {Array} - array of Community objects with total number of points for that month
+ */
 
 
 

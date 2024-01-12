@@ -60,7 +60,7 @@ utilsRouter.get("/inflate-db", async (_, res) => {
                 profilePicture: `https://picsum.photos/200?random=${i}`,
 
               //new user has not joined a community yet
-                communityName: "",
+                communityId: "",
                 experiencePoints: experiencePoints
             });
             await user.save();
@@ -71,7 +71,7 @@ utilsRouter.get("/inflate-db", async (_, res) => {
                 name: `Community ${i}`,
                 logo: `https://picsum.photos/200?random=${i+USERS_COUNT}`,
                 totalPoints:0,
-                members: [],
+                totalMembers: 0,
             });
             await community.save();
         }

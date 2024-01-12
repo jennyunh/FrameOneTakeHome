@@ -47,7 +47,7 @@ const DarkLeaderboard: React.FC<LeaderboardProps> = ({ communitiesRanked }) => {
                             <div id="dark-rank" className="leaderboard-section dark-leaderboard-section">{rank++}</div>
                             <img id="dark-logo" className="leaderboard-section dark-leaderboard-section" src={obj.logo} />
                             <div id="dark-community" className="leaderboard-section dark-leaderboard-section">{obj.name}</div>
-                            <div id="dark-members" className="leaderboard-section dark-leaderboard-section">{obj.numberOfMembers}</div>
+                            <div id="dark-members" className="leaderboard-section dark-leaderboard-section">{obj.totalMembers}</div>
                             <div id="dark-EXP" className="leaderboard-section dark-leaderboard-section">{obj.totalPoints}</div>
 
                         </div>

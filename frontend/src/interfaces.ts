@@ -2,7 +2,7 @@ export interface User {
     _id: string;
     email: string;
     profilePicture?: string;
-    totalExperience?: number;
+    communityId: string;
     experiencePoints?: {points: number, timestamp: string}[];
 }
   
@@ -11,6 +11,5 @@ export interface Community {
     name: string;
     logo?: string;
     totalPoints?: number;
-    numberOfMembers?: number;
-    members?: {member: string, date: object}[];
+    totalMembers?: number;
 }

@@ -8,6 +8,7 @@
     "dev:frontend": "pnpm -filter frontend run dev"
   },
   "devDependencies": {
+    "@types/react": "^18.2.46",
     "ts-node": "^10.9.2",
     "typescript": "^5.2.2"
   },
