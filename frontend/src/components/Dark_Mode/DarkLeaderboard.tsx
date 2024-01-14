@@ -2,6 +2,7 @@
 import "./DarkLeaderboard.css";
 import { Community } from '../../interfaces';
 import { motion } from 'framer-motion';
+import React from 'react';
 
 interface LeaderboardProps {
     data: Community[] | null; //Array of Community objects in total points ranked order
@@ -68,4 +69,8 @@ const DarkLeaderboard: React.FC<LeaderboardProps> = ({ data }) => {
     );
 };
 
-export default DarkLeaderboard;
+// Memoize the component to prevent unnecessary renders
+const MemoizedDarkLeaderboard = React.memo(DarkLeaderboard);
+
+
+export default MemoizedDarkLeaderboard;

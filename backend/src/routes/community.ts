@@ -191,7 +191,7 @@ communityRouter.get("/alphabetical", async (_, res) => {
 */
 communityRouter.get("/ranked", async (_, res) => {
 	try {
-		const communities = await getCommunities({ totalPoints: -1 });
+		const communities = await getCommunities({ totalPoints: -1, totalMembers: -1 });
 		res.send(communities);
 	} catch (error) {
 		console.error(error);

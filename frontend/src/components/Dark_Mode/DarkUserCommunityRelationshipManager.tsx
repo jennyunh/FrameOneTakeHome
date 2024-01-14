@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import React, { useState, useCallback, MouseEvent} from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { Community, User } from '../../interfaces';
 import "./DarkUserCommunityRelationshipManager.css";
 import { toast } from 'react-hot-toast';
-import DarkLeaderboard from './DarkLeaderboard';
+import MemoizedDarkLeaderboard from './DarkLeaderboard';
 import ConfirmJoin from '../ConfirmJoin';
 import ConfirmLeave from '../ConfirmLeave';
 import DarkUserCommunitySelect from './DarkUserCommunitySelect';
 import FrameOneLogo from '../FrameOneLogo';
-import MonthSelect from './MonthSelect';
+import MemoizedMonthSelect from './MonthSelect';
+
 
 
 interface MutationData {
@@ -39,14 +40,14 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
 
     //State for selecting month to sort by
-    const [selectedMonth, setMonth] = useState<number | null>(null);
+    const [selectedMonth, setMonth] = useState<number>(0);
 
     //State for applying the month sort
     const [applyMonth, setApplyMonth] = useState<boolean>(false);
 
 
     //State for displaying month
-    const [monthName, setMonthName] = useState<string>("All");
+    const [monthName, setMonthName] = useState<string>("No Month Selected");
 
 
     //State for selecting month to sort by
@@ -81,10 +82,18 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
     const { data: communitiesByMonth, isLoading: communitiesByMonthLoading, refetch: refetchCommunitiesByMonth } = useQuery({
         queryKey: ['communitiesByMonth'],
         queryFn: async () => {
-            const res = await axios.get(`http://localhost:8080/community/bymonth?month=${selectedMonth}`);
-            setApplyMonth(false);
-            setLeaderboardData(res.data); // Set the state here
-            return res.data;
+            if (selectedMonth === 0) {
+                setLeaderboardData(communitiesRanked)
+                //query function should return a promise
+                return Promise.resolve([])
+            }
+            else{
+                const res = await axios.get(`http://localhost:8080/community/bymonth?month=${selectedMonth}`);
+                setApplyMonth(false);
+                setLeaderboardData(res.data); // Set the state here
+                return res.data;
+            }
+          
         },
 
         // Only get data when selectedMonth is truthy
@@ -125,7 +134,7 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
             // UPDATE THE SELECTED USER TO NULL AFTER THE REFETCH IS COMPLETE
             //otherwise the selectedUser state might be the old user so it gets buggy when you click more button
-            setSelectedUser(null);
+            // setSelectedUser(null);
 
 
         },
@@ -139,9 +148,17 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
 
 
-    //Handlers
-    const handleJoinClick = () => {
 
+
+
+
+
+
+    //Handlers
+    const handleJoinClick = (e: MouseEvent<HTMLButtonElement>) => {
+
+
+        e.preventDefault();
         //if a user and community is selected
         if (selectedUser && selectedCommunity) {
 
@@ -178,7 +195,8 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
             toast.error("Please select a user and a community")
         }
 
-    };
+    }
+
 
 
 
@@ -189,6 +207,8 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
         //When user confirms, join the community
         if (confirmed && selectedUser && selectedCommunity) {
+
+            console.log("confirm the join: " + selectedUser + " and " + selectedCommunity)
             joinMutation.mutate({ userId: selectedUser, communityId: selectedCommunity })
         }
 
@@ -198,40 +218,46 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
 
 
+    const handleLeaveClick = (e: MouseEvent<HTMLButtonElement>) => {
 
+        e.preventDefault();
 
-    const handleLeaveClick = () => {
-        if (selectedUser && selectedCommunity) {
+            if (selectedUser && selectedCommunity) {
 
-            //find the selected user and community in the data
-            const theSelectedUser = users.find((user: User) => user._id === selectedUser)
-            const theSelectedCommunity = communities.find((community: Community) => community._id === selectedCommunity)
-            const users_community = communities.find((community: Community) => community._id === theSelectedUser.communityId)
+                //find the selected user and community in the data
+                const theSelectedUser = users.find((user: User) => user._id === selectedUser)
+                const theSelectedCommunity = communities.find((community: Community) => community._id === selectedCommunity)
+                const users_community = communities.find((community: Community) => community._id === theSelectedUser.communityId)
 
-            //check if the user has a community to leave. If not, show error popup
-            if (!theSelectedUser.communityId) {
-                toast.error("You do not have a community to leave. Please join a community.")
+                //check if the user has a community to leave. If not, show error popup
+                if (!theSelectedUser.communityId) {
+                    toast.error("You do not have a community to leave. Please join a community.")
+                }
+
+                //Else if the selected community is NOT the same as the community the user joined,
+                //throw error
+                else if (theSelectedCommunity._id !== theSelectedUser.communityId) {
+                    toast.error("This is not the community you joined\n You are a member of: " + users_community.name)
+                }
+
+                //else prompt a leave confirmation popup
+                //***If they leave, they will lose any experience points they collected for that community.
+                //My assumption: the total points of a given community
+                //is the total points accrued by its ACTIVE members (so any points accrued by EX-members will be deleted)
+                else {
+                    setConfirmLeave(true);
+                }
             }
 
-            //Else if the selected community is NOT the same as the community the user joined,
-            //throw error
-            else if (theSelectedCommunity._id !== theSelectedUser.communityId) {
-                toast.error("This is not the community you joined\n You are a member of: " + users_community.name)
-            }
-
-            //else prompt a leave confirmation popup
-            //***If they leave, they will lose any experience points they collected for that community.
-            //My assumption: the total points of a given community
-            //is the total points accrued by its ACTIVE members (so any points accrued by EX-members will be deleted)
             else {
-                setConfirmLeave(true);
+                toast.error("Please select a user and a community")
             }
         }
 
-        else {
-            toast.error("Please select a user and a community")
-        }
-    };
+
+
+
+
 
 
 
@@ -256,30 +282,39 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
         if (num >= 1 && num <= 12) {
             return months[num - 1];
+        } else if (num === 0) {
+return "No Month Selected"
         } else {
-            return 'Invalid month number';
+            return 'error';
         }
     }
 
 
-    const handleMonthChange = (month: number) => {
-
-        setMonth(month);
-        setMonthName(getMonthName(month));
 
 
-    };
+
+    const handleMonthChange =
+            (month: number) => {
+
+                setMonth(month);
+                setMonthName(getMonthName(month));
 
 
-    const handleApplyMonth = () => {
+            }
 
-        setApplyMonth(true);
 
-        if (applyMonth) {
-            refetchCommunitiesByMonth();
-        }
 
-    };
+
+    const handleApplyMonth = useCallback(
+            (e: MouseEvent<HTMLButtonElement>) => {
+                e.preventDefault();
+                setApplyMonth(true);
+                refetchCommunitiesByMonth();
+
+            }, [applyMonth, communitiesByMonth]
+        )
+
+
 
 
 
@@ -304,10 +339,10 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
             <div id="month-name">Month: {monthName}</div>
 
-            <MonthSelect handle_month_change={handleMonthChange} handle_apply_month={handleApplyMonth} />
+            <MemoizedMonthSelect handle_month_change={handleMonthChange} handle_apply_month={handleApplyMonth} />
 
 
-            <DarkLeaderboard data={leaderboardData} />
+            <MemoizedDarkLeaderboard data={leaderboardData} />
 
             {confirmJoin && (
                 <ConfirmJoin handle_join={handleConfirmJoin} />

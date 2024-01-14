@@ -14,8 +14,6 @@ class Community {
 	public totalMembers?: number;
 
 
-
-
 	//members is an array of objects (member is user's email, and timestamp is date joined)
 	// @prop({ required: true, select: false, default: [] })
 	// public members?: {member?: string, totalPoints?: number, timestamp: Date}[];

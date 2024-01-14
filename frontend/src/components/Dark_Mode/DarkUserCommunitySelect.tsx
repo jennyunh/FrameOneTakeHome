@@ -1,12 +1,12 @@
 
 import { Community, User } from '../../interfaces';
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction, MouseEvent} from 'react';
 import "./DarkUserCommunitySelect.css";
 
 
 interface UserCommunitySelectProps {
-    handle_join_click: () => void;
-    handle_leave_click: () => void;
+    handle_join_click: (e: MouseEvent<HTMLButtonElement>)  => void;
+    handle_leave_click: (e: MouseEvent<HTMLButtonElement>)  => void;
     set_user: Dispatch<SetStateAction<string | null>>;
     set_community: Dispatch<SetStateAction<string | null>>;
     communities: Community[];
@@ -42,7 +42,7 @@ const DarkUserCommunitySelect: React.FC<UserCommunitySelectProps> = ({ handle_jo
                 <button
                     id="dark-join-button"
                     className="join-button"
-                    onClick={handle_join_click}
+                    onClick={(e) => {handle_join_click(e)}}
 
                 >
                     Join
@@ -51,7 +51,7 @@ const DarkUserCommunitySelect: React.FC<UserCommunitySelectProps> = ({ handle_jo
                 <button
                     id="dark-leave-button"
                     className="leave-button"
-                    onClick={handle_leave_click}
+                    onClick={(e) => {handle_leave_click(e)}}
                 >
                     Leave
                 </button>
@@ -61,5 +61,6 @@ const DarkUserCommunitySelect: React.FC<UserCommunitySelectProps> = ({ handle_jo
 
 
 };
+
 
 export default DarkUserCommunitySelect;
