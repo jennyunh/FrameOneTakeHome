@@ -35,6 +35,14 @@ const MonthSelect: React.FC<MonthSelectProps> = ({ setMonth, setMonthName, setYe
     }
 
 
+
+    // Get current date
+    const currentDate = new Date();
+
+    //current year
+    const currentYear = currentDate.getFullYear();
+
+
     const handleMonthChange =
         (month: number) => {
             setMonth(month);
@@ -43,12 +51,6 @@ const MonthSelect: React.FC<MonthSelectProps> = ({ setMonth, setMonthName, setYe
             setButtonDisable(false);
             console.log("month is " + month)
 
-
-            // Get current date
-            const currentDate = new Date();
-
-            //current year
-            const currentYear = currentDate.getFullYear();
 
             // Calculate correct year for the selected month.
             //RULE: Can only show 12 months before the current month (e.g: Jan 2024 to Feb 2023)
@@ -71,6 +73,7 @@ const MonthSelect: React.FC<MonthSelectProps> = ({ setMonth, setMonthName, setYe
             if (clear) {
                 setMonth(0);
                 setSelectedMonth(0);
+                setYearName(currentYear.toString());
                 setApplyMonth(true);
                 setButtonDisable(false);
                 setMonthName(getMonthName(0));
