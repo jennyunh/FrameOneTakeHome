@@ -4,10 +4,11 @@
 
 
 
-.dark-select{
+.dark-select {
     background-color: #313037;
     color: #ffffff !important;
     border-radius: 3vmin !important;
+    height: 2rem;
 }
 
 
@@ -26,12 +27,13 @@
     display: flex;
     flex-flow: row nowrap;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
 }
 
 
-.dark-label{
+.dark-label {
     color: white;
+    margin: 0;
 }
 
 
@@ -40,14 +42,15 @@
     background-color: rgb(97, 87, 203);
     color: #ffffff;
     border: none;
-}
-
-
-#dark-apply-button{
-    margin: 10px;
+    height: 2rem;
+    width: 16vmin;
+    margin: 0 0 0 1vmin;
     transition: all 250ms ease-in-out;
-border-radius: 3vmin;
+    border-radius: 3vmin;
+    padding: 0;
+    font-size: 2vmin;
 }
+
 
 #dark-apply-button:hover {
     background: rgb(111, 102, 207);
@@ -57,8 +60,19 @@ border-radius: 3vmin;
 
 /* Disabled button styles */
 #dark-apply-button:disabled {
-    background-color: #bdc3c7; /* Change the background color for disabled state */
-    color: #7f8c8d; /* Change the text color for disabled state */
-    cursor: not-allowed; /* Change the cursor for disabled state */
-  }
-  
+    background-color: #bdc3c7;
+    /* Change the background color for disabled state */
+    color: #7f8c8d;
+    /* Change the text color for disabled state */
+    cursor: not-allowed;
+    /* Change the cursor for disabled state */
+}
+
+
+
+#group {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+}

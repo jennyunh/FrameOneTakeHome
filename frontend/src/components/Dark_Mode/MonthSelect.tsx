@@ -14,6 +14,7 @@ interface MonthSelectProps {
 const MonthSelect: React.FC<MonthSelectProps> = ({ setMonth, setMonthName, setApplyMonth }) => {
 
     const [buttonDisable, setButtonDisable] = useState(false);
+    const [selectedMonth, setSelectedMonth] = useState(0);
 
 
     const getMonthName = (num: number) => {
@@ -35,21 +36,34 @@ const MonthSelect: React.FC<MonthSelectProps> = ({ setMonth, setMonthName, setAp
 
     const handleMonthChange =
         (month: number) => {
-
             setMonth(month);
+            setSelectedMonth(month);
             setMonthName(getMonthName(month));
             setButtonDisable(false);
-console.log("month is " + month)
+            console.log("month is " + month)
         }
 
 
 
 
     const handleApplyMonth =
-        (e: MouseEvent<HTMLButtonElement>) => {
+        (e: MouseEvent<HTMLButtonElement>, clear: boolean) => {
             e.preventDefault();
-            setApplyMonth(true);
-            setButtonDisable(true);
+
+
+            if (clear) {
+                setMonth(0);
+                setSelectedMonth(0);
+                setApplyMonth(true);
+                setButtonDisable(false);
+                setMonthName(getMonthName(0));
+            }
+
+            else{
+                setApplyMonth(true);
+                setButtonDisable(true);
+            }
+     
 
         }
 
@@ -64,20 +78,43 @@ console.log("month is " + month)
 
             <label className="dark-label">
                 Sort Points by Month: &nbsp;
-                <select className="dark-select" onChange={(e) => handleMonthChange(Number(e.target.value))}>
-                    <option value={0}>Select Month</option>
-                    {months.map((month) => <option key={month} value={month}>{month}</option>)}
-                </select>
+
+
+                <div id="group">
+                    <select className="dark-select"
+                    onChange={(e) => handleMonthChange(Number(e.target.value))}
+                    value={selectedMonth}>
+                        <option value={0}>Select Month</option>
+                        {months.map((month) => <option key={month} value={month}>{month}</option>)}
+                        
+                    </select>
+
+
+                    <button
+                        id="dark-apply-button"
+                        className="apply-button"
+                        onClick={(e) => { handleApplyMonth(e, false) }}
+                        disabled={buttonDisable} // Disable the button if buttonDisabled is true
+                    >
+                        Apply
+                    </button>
+
+                    <button
+                        id="dark-apply-button"
+                        className="apply-button"
+                        onClick={(e) => { handleApplyMonth(e, true) }}
+                    >
+                        Clear
+                    </button>
+
+                </div>
+
+
+
             </label>
 
-            <button
-                id="dark-apply-button"
-                className="apply-button"
-                onClick={(e) => { handleApplyMonth(e) }}
-                disabled={buttonDisable} // Disable the button if buttonDisabled is true
-            >
-                Apply
-            </button>
+
+
 
 
         </div>

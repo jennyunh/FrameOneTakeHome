@@ -317,7 +317,7 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
                 communities={communities}
                 users={users} />
 
-            <div id="month-name">Month: {monthName}</div>
+            <div id="month-name"><div id="month-title">Month:&nbsp; </div> {monthName}</div>
 
             <MemoizedMonthSelect setMonth={setMonth} setMonthName={setMonthName} setApplyMonth={setApplyMonth} />
 
