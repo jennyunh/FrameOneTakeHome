@@ -58,14 +58,11 @@
     color: #ffffff;
 }
 
-/* Disabled button styles */
+
 #dark-apply-button:disabled {
     background-color: #bdc3c7;
-    /* Change the background color for disabled state */
     color: #7f8c8d;
-    /* Change the text color for disabled state */
     cursor: not-allowed;
-    /* Change the cursor for disabled state */
 }
 
 
