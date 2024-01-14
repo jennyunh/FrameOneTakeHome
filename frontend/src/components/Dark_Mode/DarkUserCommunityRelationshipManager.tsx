@@ -1,4 +1,4 @@
-import React, { useState, useCallback, MouseEvent} from 'react';
+import React, { useState, MouseEvent} from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { Community, User } from '../../interfaces';
@@ -85,12 +85,17 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
             if (selectedMonth === 0) {
                 setLeaderboardData(communitiesRanked)
                 //query function should return a promise
+
+                setApplyMonth(false);
+                console.log("selectedmonth is 0.  " + selectedMonth)
                 return Promise.resolve([])
             }
             else{
                 const res = await axios.get(`http://localhost:8080/community/bymonth?month=${selectedMonth}`);
                 setApplyMonth(false);
+                setMonth(0);
                 setLeaderboardData(res.data); // Set the state here
+                console.log(selectedMonth)
                 return res.data;
             }
           
@@ -273,48 +278,6 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
 
 
-    const getMonthName = (num: number) => {
-        const months = [
-            'January', 'February', 'March', 'April',
-            'May', 'June', 'July', 'August',
-            'September', 'October', 'November', 'December'
-        ];
-
-        if (num >= 1 && num <= 12) {
-            return months[num - 1];
-        } else if (num === 0) {
-return "No Month Selected"
-        } else {
-            return 'error';
-        }
-    }
-
-
-
-
-
-    const handleMonthChange =
-            (month: number) => {
-
-                setMonth(month);
-                setMonthName(getMonthName(month));
-
-
-            }
-
-
-
-
-    const handleApplyMonth = useCallback(
-            (e: MouseEvent<HTMLButtonElement>) => {
-                e.preventDefault();
-                setApplyMonth(true);
-                refetchCommunitiesByMonth();
-
-            }, [applyMonth, communitiesByMonth]
-        )
-
-
 
 
 
@@ -339,7 +302,7 @@ return "No Month Selected"
 
             <div id="month-name">Month: {monthName}</div>
 
-            <MemoizedMonthSelect handle_month_change={handleMonthChange} handle_apply_month={handleApplyMonth} />
+            <MemoizedMonthSelect setMonth={setMonth} setMonthName={setMonthName} setApplyMonth={setApplyMonth} />
 
 
             <MemoizedDarkLeaderboard data={leaderboardData} />

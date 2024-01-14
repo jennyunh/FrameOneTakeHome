@@ -1,44 +1,85 @@
 
 import "./MonthSelect.css";
-import React, { MouseEvent } from 'react';
+import React, { Dispatch, SetStateAction, MouseEvent, useState } from 'react';
 
 interface MonthSelectProps {
-   handle_month_change: (month:number) => void;
-   handle_apply_month: (e: MouseEvent<HTMLButtonElement>)  => void;
+    setMonth: Dispatch<SetStateAction<number>>;
+    setMonthName: Dispatch<SetStateAction<string>>;
+    setApplyMonth: Dispatch<SetStateAction<boolean>>;
 }
 
 
 
 
-const MonthSelect: React.FC<MonthSelectProps> = ({ handle_month_change, handle_apply_month }) => {
+const MonthSelect: React.FC<MonthSelectProps> = ({ setMonth, setMonthName, setApplyMonth }) => {
+
+    const [buttonDisable, setButtonDisable] = useState(false);
+
+
+    const getMonthName = (num: number) => {
+        const months = [
+            'January', 'February', 'March', 'April',
+            'May', 'June', 'July', 'August',
+            'September', 'October', 'November', 'December'
+        ];
+
+        if (num >= 1 && num <= 12) {
+            return months[num - 1];
+        } else if (num === 0) {
+            return "No Month Selected"
+        } else {
+            return 'error';
+        }
+    }
+
+
+    const handleMonthChange =
+        (month: number) => {
+
+            setMonth(month);
+            setMonthName(getMonthName(month));
+            setButtonDisable(false);
+console.log("month is " + month)
+        }
 
 
 
-const months = [1,2,3,4,5,6,7,8,9,10,11,12]
+
+    const handleApplyMonth =
+        (e: MouseEvent<HTMLButtonElement>) => {
+            e.preventDefault();
+            setApplyMonth(true);
+            setButtonDisable(true);
+
+        }
+
+
+
+    const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 
     return (
-        <div id="dark-month-container" className="month-container" key="months-container">
-           
-           
+        <div id="dark-month-container" className="month-container">
+
+
             <label className="dark-label">
-               Sort Points by Month: &nbsp;
-                <select className="dark-select" onChange={(e) => handle_month_change(Number(e.target.value))}>
+                Sort Points by Month: &nbsp;
+                <select className="dark-select" onChange={(e) => handleMonthChange(Number(e.target.value))}>
                     <option value={0}>Select Month</option>
                     {months.map((month) => <option key={month} value={month}>{month}</option>)}
                 </select>
             </label>
 
             <button
-                    id="dark-apply-button"
-                    className="apply-button"
-                    onClick={(e) => {handle_apply_month(e)}}
+                id="dark-apply-button"
+                className="apply-button"
+                onClick={(e) => { handleApplyMonth(e) }}
+                disabled={buttonDisable} // Disable the button if buttonDisabled is true
+            >
+                Apply
+            </button>
 
-                >
-                    Apply
-                </button>
-        
-         
+
         </div>
     )
 
@@ -46,9 +87,10 @@ const months = [1,2,3,4,5,6,7,8,9,10,11,12]
 };
 
 
-
 // Memoize the component to prevent unnecessary renders
 const MemoizedMonthSelect = React.memo(MonthSelect);
 
 
 export default MemoizedMonthSelect;
+
+
