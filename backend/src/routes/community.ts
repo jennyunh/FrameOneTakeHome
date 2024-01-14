@@ -38,9 +38,10 @@ const getCommunities = async (sortCriteria: any) => {
 
 
 
-//Aggregation pipeline that takes a month,
+//Aggregation pipeline that takes a month (number)
 //and creates an array  of communities with the total points for that month
-//can map out the array in the front end.
+//the array only shows communities with points for that month (does not show communities with 0 points)
+
 const getPointsByMonth = async (month: number) => {
 
 
@@ -71,6 +72,8 @@ const getPointsByMonth = async (month: number) => {
 			}
 		},
 
+		//group by communityId,
+		//totalPoints is the sum of the experiencePoints.points
 		{
 			$group: {
 				_id: "$communityId",
@@ -80,26 +83,32 @@ const getPointsByMonth = async (month: number) => {
 			}
 		},
 
+		//add a field called objectCommunityId, which is the communityId converted to an objectId
+		//to match the type of the community id in the Community Model (which is an objectId).
 		{
 			$addFields: {
 				objectCommunityId: { $toObjectId: "$_id" }
 			}
 		},
 
-
+//Add a field called result that is an array that 
+//contains the community from Community Model that matches
+//the user's community id
 		{
 			$lookup: {
-				from: "communities", // Change this to the actual name of your CommunityModel collection
+				from: "communities", 
 				localField: "objectCommunityId",
 				foreignField: "_id",
 				as: "result",
 			},
 		},
 
+		//flatten the result array
 		{
 			$unwind: "$result",
 		},
 
+		//add the following fields
 		{
 			$addFields: {
 				name: "$result.name",
@@ -107,12 +116,15 @@ const getPointsByMonth = async (month: number) => {
 				totalMembers: "$result.totalMembers"
 			}
 		},
-	{
+	
+	//sort by totalPoints (descending)
+		{
 		$sort: {
 			totalPoints: -1
 			}
 	},
 
+	//final result should show:
 	{
 		$project: {
 			name: 1,
@@ -122,13 +134,7 @@ const getPointsByMonth = async (month: number) => {
 			_id: 1
 			}
 	}
-
-
-
-
-
 	]);
-
 }
 
 
@@ -146,13 +152,17 @@ communityRouter.get("/bymonth", async (req, res) => {
 	try {
 		const month = Number(req.query.month);
 
+		//if the month number is not between 1 and 12 (inclusive)
 		if (!month || month < 1 || month > 12) {
 			return res.status(400).send({ message: "Invalid month value" });
 		}
 
+		//run the getPointsByMonth aggregation
 		const pointsByMonth = await getPointsByMonth(month);
 
 		res.send(pointsByMonth);
+
+
 	} catch (error) {
 		console.error(error);
 		res.status(500).send({ message: "Internal Server Error" });

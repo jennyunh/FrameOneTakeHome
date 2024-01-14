@@ -1,4 +1,4 @@
-import React, { useState, MouseEvent} from 'react';
+import React, { useState, MouseEvent } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { Community, User } from '../../interfaces';
@@ -54,20 +54,25 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
     const [leaderboardData, setLeaderboardData] = useState<Community[] | null>(null);
 
 
+
+
     //GET the data
+
+    //get users
     const { data: users, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
         queryKey: ['users'],
         queryFn: () => axios.get('http://localhost:8080/user').then(res => res.data)
     });
 
 
+    //get communities in alphabetical order
     const { data: communities, isLoading: communitiesLoading, refetch: refetchCommunities } = useQuery({
         queryKey: ['communities'],
         queryFn: () => axios.get('http://localhost:8080/community/alphabetical').then(res => res.data)
     });
 
 
-    //ranked communities data is passed onto leaderboard component
+    //ranked communities data is passed onto the leaderboard component
     const { data: communitiesRanked, isLoading: communitiesRankedLoading, refetch: refetchCommunitiesRanked } = useQuery({
         queryKey: ['communitiesRanked'],
         queryFn: async () => {
@@ -82,28 +87,43 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
     const { data: communitiesByMonth, isLoading: communitiesByMonthLoading, refetch: refetchCommunitiesByMonth } = useQuery({
         queryKey: ['communitiesByMonth'],
         queryFn: async () => {
+
+            //if selectedMonth is 0 ("no month is selected"),
+            //make leaderboard display all communities with their total points for all months
             if (selectedMonth === 0) {
                 setLeaderboardData(communitiesRanked)
-                //query function should return a promise
-
                 setApplyMonth(false);
+
                 console.log("selectedmonth is 0.  " + selectedMonth)
+
+                //query function should return a promise
                 return Promise.resolve([])
             }
-            else{
+
+            else {
                 const res = await axios.get(`http://localhost:8080/community/bymonth?month=${selectedMonth}`);
                 setApplyMonth(false);
-                setMonth(0);
-                setLeaderboardData(res.data); // Set the state here
+                setLeaderboardData(res.data); 
                 console.log(selectedMonth)
                 return res.data;
             }
-          
+
         },
+
+        //  initial (empty array) data that you want available immediately (initial render)
+        //and then fetch data if applyMonth state is true.
+        //this will prevent the page from appearing to "refresh" after the apply button
+        //is clicked for the first time.
+        //It refreshed because it is creating this data for the first time.
+        initialData: [],
 
         // Only get data when selectedMonth is truthy
         enabled: !!applyMonth,
     });
+
+
+
+
 
 
     //Mutation Functions
@@ -137,10 +157,6 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
             refetchCommunities();
             refetchCommunitiesRanked();
 
-            // UPDATE THE SELECTED USER TO NULL AFTER THE REFETCH IS COMPLETE
-            //otherwise the selectedUser state might be the old user so it gets buggy when you click more button
-            // setSelectedUser(null);
-
 
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -160,10 +176,13 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
 
     //Handlers
+
+
+
     const handleJoinClick = (e: MouseEvent<HTMLButtonElement>) => {
 
-
         e.preventDefault();
+
         //if a user and community is selected
         if (selectedUser && selectedCommunity) {
 
@@ -223,45 +242,43 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
 
 
+
+
     const handleLeaveClick = (e: MouseEvent<HTMLButtonElement>) => {
 
         e.preventDefault();
 
-            if (selectedUser && selectedCommunity) {
+        if (selectedUser && selectedCommunity) {
 
-                //find the selected user and community in the data
-                const theSelectedUser = users.find((user: User) => user._id === selectedUser)
-                const theSelectedCommunity = communities.find((community: Community) => community._id === selectedCommunity)
-                const users_community = communities.find((community: Community) => community._id === theSelectedUser.communityId)
+            //find the selected user and community in the data
+            const theSelectedUser = users.find((user: User) => user._id === selectedUser)
+            const theSelectedCommunity = communities.find((community: Community) => community._id === selectedCommunity)
+            const users_community = communities.find((community: Community) => community._id === theSelectedUser.communityId)
 
-                //check if the user has a community to leave. If not, show error popup
-                if (!theSelectedUser.communityId) {
-                    toast.error("You do not have a community to leave. Please join a community.")
-                }
-
-                //Else if the selected community is NOT the same as the community the user joined,
-                //throw error
-                else if (theSelectedCommunity._id !== theSelectedUser.communityId) {
-                    toast.error("This is not the community you joined\n You are a member of: " + users_community.name)
-                }
-
-                //else prompt a leave confirmation popup
-                //***If they leave, they will lose any experience points they collected for that community.
-                //My assumption: the total points of a given community
-                //is the total points accrued by its ACTIVE members (so any points accrued by EX-members will be deleted)
-                else {
-                    setConfirmLeave(true);
-                }
+            //check if the user has a community to leave. If not, show error popup
+            if (!theSelectedUser.communityId) {
+                toast.error("You do not have a community to leave. Please join a community.")
             }
 
+            //Else if the selected community is NOT the same as the community the user joined,
+            //throw error
+            else if (theSelectedCommunity._id !== theSelectedUser.communityId) {
+                toast.error("This is not the community you joined\n You are a member of: " + users_community.name)
+            }
+
+            //else prompt a leave confirmation popup
+            //***If they leave, they will lose any experience points they collected for that community.
+            //My assumption: the total points of a given community
+            //is the total points accrued by its ACTIVE members (so any points accrued by EX-members will be deleted)
             else {
-                toast.error("Please select a user and a community")
+                setConfirmLeave(true);
             }
         }
 
-
-
-
+        else {
+            toast.error("Please select a user and a community")
+        }
+    }
 
 
 

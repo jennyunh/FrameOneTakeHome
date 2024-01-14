@@ -37,8 +37,10 @@ userRouter.get("/:id", async (req, res) => {
 userRouter.get("/", async (_, res) => {
 	const users = await UserModel.aggregate([
 		{
-			$unwind: { path: "$experiencePoints",
-			preserveNullAndEmptyArrays: true }			
+			$unwind: {
+				path: "$experiencePoints",
+				preserveNullAndEmptyArrays: true
+			}
 		},
 		{
 			$group: {
@@ -49,6 +51,8 @@ userRouter.get("/", async (_, res) => {
 				totalExperience: { $sum: "$experiencePoints.points" }
 			}
 		},
+
+		//alphabetical order
 		{ $sort: { email: 1 } }
 
 	]);
@@ -97,8 +101,10 @@ userRouter.post("/:userId/join/:communityId", async (req, res) => {
 				$match: { communityId: communityId } // Match users belonging to the specific community
 			},
 			{
-				$unwind: { path: "$experiencePoints",
-				preserveNullAndEmptyArrays: true}  // Unwind the experiencePoints array
+				$unwind: {
+					path: "$experiencePoints", // Unwind the experiencePoints array
+					preserveNullAndEmptyArrays: true
+				}  // create a doc if array is empty
 			},
 			{
 				$group: {
@@ -109,31 +115,29 @@ userRouter.post("/:userId/join/:communityId", async (req, res) => {
 		]);
 
 
-			//update new community's total points
-			if (aggregateResult[0]) {
-		
-				await CommunityModel.findByIdAndUpdate(
-					communityId,
-					{ totalPoints: aggregateResult[0].totalPoints }
-				)
-		
-			} else {
-		
-				await CommunityModel.findByIdAndUpdate(
-					communityId,
-					{ totalPoints: 0 }
-				)
-	
-			}
+		//update new community's total points
+		if (aggregateResult[0]) {
 
-			
-	
+			await CommunityModel.findByIdAndUpdate(
+				communityId,
+				{ totalPoints: aggregateResult[0].totalPoints }
+			)
 
+
+			//no points
+		} else {
+			await CommunityModel.findByIdAndUpdate(
+				communityId,
+				{ totalPoints: 0 }
+			)
+
+		}
 
 
 		//SUCCESS
 		return res.status(200).send()
 	}
+
 
 
 	//else if the user does have a community 
@@ -146,7 +150,7 @@ userRouter.post("/:userId/join/:communityId", async (req, res) => {
 			{ $inc: { totalMembers: -1 } })
 
 
-					//update the user's community id field with the new community id
+		//update the user's community id field with the new community id
 		await UserModel.findByIdAndUpdate(userId, { communityId: communityId })
 
 
@@ -170,14 +174,14 @@ userRouter.post("/:userId/join/:communityId", async (req, res) => {
 
 		//update old community's total points
 		if (oldTotalPoints[0]) {
-		
+
 			await CommunityModel.findByIdAndUpdate(
 				oldCommunity,
 				{ totalPoints: oldTotalPoints[0].totalPoints }
 			)
-	
+
+			//case for no points
 		} else {
-	
 			await CommunityModel.findByIdAndUpdate(
 				oldCommunity,
 				{ totalPoints: 0 }
@@ -198,9 +202,10 @@ userRouter.post("/:userId/join/:communityId", async (req, res) => {
 				$match: { communityId: communityId } // Match users belonging to the specific community
 			},
 			{
-				$unwind: { path: "$experiencePoints",
-				preserveNullAndEmptyArrays: true}
-				 // Unwind the experiencePoints array
+				$unwind: {
+					path: "$experiencePoints",
+					preserveNullAndEmptyArrays: true //create doc for user with empty experiencePoints array
+				}
 			},
 			{
 				$group: {
@@ -214,24 +219,20 @@ userRouter.post("/:userId/join/:communityId", async (req, res) => {
 
 		//update new community's total points
 		if (newTotalPoints[0]) {
-		
+
 			await CommunityModel.findByIdAndUpdate(
 				communityId,
 				{ totalPoints: newTotalPoints[0].totalPoints }
 			)
-	
+
 		} else {
-	
+
 			await CommunityModel.findByIdAndUpdate(
 				communityId,
 				{ totalPoints: 0 }
 			)
 
 		}
-
-
-	
-
 
 		//SUCCESS
 		return res.status(200).send()
@@ -241,6 +242,7 @@ userRouter.post("/:userId/join/:communityId", async (req, res) => {
 	//catcher "Not Implemented server error"
 	res.status(501).send();
 });
+
 
 
 
@@ -280,24 +282,26 @@ userRouter.delete("/:userId/leave/:communityId", async (req, res) => {
 
 		//recalculate the old community's totalMembers
 		await CommunityModel.findByIdAndUpdate(communityId,
-			{ $inc: { totalMembers: -1 }  })
+			{ $inc: { totalMembers: -1 } })
 
 
 		//wipe out the user's experience points for that community
 		await UserModel.findByIdAndUpdate(userId, { experiencePoints: [] })
 
 
-			//update the user's community id
-			await UserModel.findByIdAndUpdate(userId, { communityId: "" })
-			
+		//update the user's community id
+		await UserModel.findByIdAndUpdate(userId, { communityId: "" })
+
 		//recalculate total points for the old community
 		const updatedTotalPoints = await UserModel.aggregate([
 			{
-				$match: { communityId: communityId,
-					_id: { $ne: userId }  } // Match users belonging to the specific community
+				$match: {
+					communityId: communityId,
+					_id: { $ne: userId }
+				} // Match users belonging to the specific community
 			},
 			{
-				$unwind: "$experiencePoints" // Unwind the experiencePoints array
+				$unwind: "$experiencePoints"
 			},
 			{
 				$group: {
@@ -307,8 +311,6 @@ userRouter.delete("/:userId/leave/:communityId", async (req, res) => {
 			}
 		]);
 
-
-
 		if (updatedTotalPoints[0]) {
 			await CommunityModel.findByIdAndUpdate(
 				communityId,
@@ -316,7 +318,6 @@ userRouter.delete("/:userId/leave/:communityId", async (req, res) => {
 			)
 
 		} else {
-	
 			await CommunityModel.findByIdAndUpdate(
 				communityId,
 				{ totalPoints: 0 }
