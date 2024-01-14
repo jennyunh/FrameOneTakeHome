@@ -45,6 +45,18 @@ const getCommunities = async (sortCriteria: any) => {
 const getPointsByMonth = async (month: number) => {
 
 
+	// Get current date
+	const currentDate = new Date();
+
+	//current year
+	const currentYear = currentDate.getFullYear();
+
+	// Calculate correct year for the selected month.
+	//RULE: Can only show 12 months before the current month (e.g: Jan 2024 to Feb 2023)
+	//if the selected month is less than or equal to the current month...
+	const selectedYear = month <= currentDate.getMonth() + 1 ? currentYear : currentYear - 1;
+
+
 	return await UserModel.aggregate([
 
 		{
@@ -64,10 +76,13 @@ const getPointsByMonth = async (month: number) => {
 
 
 		{
-			//find all experiencePoints instances with a timestamp of the selected month
+			//find all experiencePoints instances with a timestamp of the selected month and correct year
 			$match: {
 				$expr: {
-					$eq: [{ $month: "$experiencePoints.timestamp" }, month]
+					$and: [
+						{ $eq: [{ $month: "$experiencePoints.timestamp" }, month] },
+						{ $eq: [{ $year: "$experiencePoints.timestamp" }, selectedYear] }
+					]
 				}
 			}
 		},
@@ -91,12 +106,12 @@ const getPointsByMonth = async (month: number) => {
 			}
 		},
 
-//Add a field called result that is an array that 
-//contains the community from Community Model that matches
-//the user's community id
+		//Add a field called result that is an array that 
+		//contains the community from Community Model that matches
+		//the user's community id
 		{
 			$lookup: {
-				from: "communities", 
+				from: "communities",
 				localField: "objectCommunityId",
 				foreignField: "_id",
 				as: "result",
@@ -116,24 +131,24 @@ const getPointsByMonth = async (month: number) => {
 				totalMembers: "$result.totalMembers"
 			}
 		},
-	
-	//sort by totalPoints (descending)
-		{
-		$sort: {
-			totalPoints: -1
-			}
-	},
 
-	//final result should show:
-	{
-		$project: {
-			name: 1,
-			logo: 1,
-			totalMembers: 1,
-			totalPoints: 1,
-			_id: 1
+		//sort by totalPoints (descending)
+		{
+			$sort: {
+				totalPoints: -1
 			}
-	}
+		},
+
+		//final result should show:
+		{
+			$project: {
+				name: 1,
+				logo: 1,
+				totalMembers: 1,
+				totalPoints: 1,
+				_id: 1
+			}
+		}
 	]);
 }
 

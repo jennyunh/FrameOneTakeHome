@@ -49,9 +49,14 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
     //State for displaying month
     const [monthName, setMonthName] = useState<string>("No Month Selected");
 
+    //State for displaying year
+    const [yearName, setYearName] = useState<string>(new Date().getFullYear().toString());
+
 
     //State for selecting month to sort by
     const [leaderboardData, setLeaderboardData] = useState<Community[] | null>(null);
+
+
 
 
 
@@ -103,8 +108,8 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
             else {
                 const res = await axios.get(`http://localhost:8080/community/bymonth?month=${selectedMonth}`);
                 setApplyMonth(false);
-                setLeaderboardData(res.data); 
-                console.log(selectedMonth)
+                setLeaderboardData(res.data);
+                console.log(res.data)
                 return res.data;
             }
 
@@ -164,10 +169,6 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
             toast.error(`Error: ${error.message}`);
         }
     });
-
-
-
-
 
 
 
@@ -242,6 +243,8 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
 
 
+    
+
 
 
     const handleLeaveClick = (e: MouseEvent<HTMLButtonElement>) => {
@@ -297,8 +300,6 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
 
 
 
-
-
     if (usersLoading || communitiesLoading || communitiesRankedLoading || communitiesByMonthLoading) return 'Loading...';
 
 
@@ -317,9 +318,17 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
                 communities={communities}
                 users={users} />
 
-            <div id="month-name"><div id="month-title">Month:&nbsp; </div> {monthName}</div>
+            <div id="month-name"><div id="month-title">Month:&nbsp; </div> {monthName}
 
-            <MemoizedMonthSelect setMonth={setMonth} setMonthName={setMonthName} setApplyMonth={setApplyMonth} />
+                &nbsp; &nbsp; &nbsp;
+
+                <div id="month-title">Year:&nbsp; </div>
+                {yearName}
+
+
+            </div>
+
+            <MemoizedMonthSelect setMonth={setMonth} setYearName={setYearName} setMonthName={setMonthName} setApplyMonth={setApplyMonth} />
 
 
             <MemoizedDarkLeaderboard data={leaderboardData} />
