@@ -9,6 +9,7 @@ import ConfirmJoin from '../ConfirmJoin';
 import ConfirmLeave from '../ConfirmLeave';
 import DarkUserCommunitySelect from './DarkUserCommunitySelect';
 import FrameOneLogo from '../FrameOneLogo';
+import MonthSelect from './MonthSelect';
 
 
 interface MutationData {
@@ -22,8 +23,9 @@ interface ManagerProps {
 }
 
 
-
 const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }) => {
+
+
 
     //Selected user or community from drop down menu
     const [selectedUser, setSelectedUser] = useState<string | null>(null);
@@ -36,7 +38,19 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
     const [confirmLeave, setConfirmLeave] = useState<boolean>(false);
 
 
+    //State for selecting month to sort by
+    const [selectedMonth, setMonth] = useState<number | null>(null);
 
+    //State for applying the month sort
+    const [applyMonth, setApplyMonth] = useState<boolean>(false);
+
+
+    //State for displaying month
+    const [monthName, setMonthName] = useState<string>("All");
+
+
+    //State for selecting month to sort by
+    const [leaderboardData, setLeaderboardData] = useState<Community[] | null>(null);
 
 
     //GET the data
@@ -55,13 +69,27 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
     //ranked communities data is passed onto leaderboard component
     const { data: communitiesRanked, isLoading: communitiesRankedLoading, refetch: refetchCommunitiesRanked } = useQuery({
         queryKey: ['communitiesRanked'],
-        queryFn: () => axios.get('http://localhost:8080/community/ranked').then(res => res.data)
+        queryFn: async () => {
+            const res = await axios.get('http://localhost:8080/community/ranked');
+            setLeaderboardData(res.data); // Set the state here
+            return res.data;
+        },
     });
 
 
+    // ranked BY MONTH communities data is passed onto leaderboard component
+    const { data: communitiesByMonth, isLoading: communitiesByMonthLoading, refetch: refetchCommunitiesByMonth } = useQuery({
+        queryKey: ['communitiesByMonth'],
+        queryFn: async () => {
+            const res = await axios.get(`http://localhost:8080/community/bymonth?month=${selectedMonth}`);
+            setApplyMonth(false);
+            setLeaderboardData(res.data); // Set the state here
+            return res.data;
+        },
 
-
-
+        // Only get data when selectedMonth is truthy
+        enabled: !!applyMonth,
+    });
 
 
     //Mutation Functions
@@ -106,7 +134,6 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
             toast.error(`Error: ${error.message}`);
         }
     });
-
 
 
 
@@ -179,7 +206,7 @@ const DarkUserCommunityRelationshipManager: React.FC<ManagerProps> = ({ toggle }
             //find the selected user and community in the data
             const theSelectedUser = users.find((user: User) => user._id === selectedUser)
             const theSelectedCommunity = communities.find((community: Community) => community._id === selectedCommunity)
-const users_community = communities.find((community: Community) => community._id === theSelectedUser.communityId)
+            const users_community = communities.find((community: Community) => community._id === theSelectedUser.communityId)
 
             //check if the user has a community to leave. If not, show error popup
             if (!theSelectedUser.communityId) {
@@ -220,8 +247,44 @@ const users_community = communities.find((community: Community) => community._id
 
 
 
+    const getMonthName = (num: number) => {
+        const months = [
+            'January', 'February', 'March', 'April',
+            'May', 'June', 'July', 'August',
+            'September', 'October', 'November', 'December'
+        ];
 
-    if (usersLoading || communitiesLoading || communitiesRankedLoading) return 'Loading...';
+        if (num >= 1 && num <= 12) {
+            return months[num - 1];
+        } else {
+            return 'Invalid month number';
+        }
+    }
+
+
+    const handleMonthChange = (month: number) => {
+
+        setMonth(month);
+        setMonthName(getMonthName(month));
+
+
+    };
+
+
+    const handleApplyMonth = () => {
+
+        setApplyMonth(true);
+
+        if (applyMonth) {
+            refetchCommunitiesByMonth();
+        }
+
+    };
+
+
+
+
+    if (usersLoading || communitiesLoading || communitiesRankedLoading || communitiesByMonthLoading) return 'Loading...';
 
 
 
@@ -239,8 +302,12 @@ const users_community = communities.find((community: Community) => community._id
                 communities={communities}
                 users={users} />
 
+            <div id="month-name">Month: {monthName}</div>
 
-            <DarkLeaderboard communitiesRanked={communitiesRanked} />
+            <MonthSelect handle_month_change={handleMonthChange} handle_apply_month={handleApplyMonth} />
+
+
+            <DarkLeaderboard data={leaderboardData} />
 
             {confirmJoin && (
                 <ConfirmJoin handle_join={handleConfirmJoin} />

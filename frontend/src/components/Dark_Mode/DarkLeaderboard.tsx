@@ -4,13 +4,11 @@ import { Community } from '../../interfaces';
 import { motion } from 'framer-motion';
 
 interface LeaderboardProps {
-    communitiesRanked: Community[]; //Array of Community objects in total points ranked order
+    data: Community[] | null; //Array of Community objects in total points ranked order
 }
 
 
-const DarkLeaderboard: React.FC<LeaderboardProps> = ({ communitiesRanked }) => {
-
-
+const DarkLeaderboard: React.FC<LeaderboardProps> = ({ data }) => {
 
     const fading_animation = {
         hidden: { opacity: 0, scale: 0.9, y: 10 },
@@ -35,7 +33,7 @@ const DarkLeaderboard: React.FC<LeaderboardProps> = ({ communitiesRanked }) => {
 
 
 
-            {communitiesRanked.map((obj, index) => {
+            {data?.map((obj, index) => {
 
 
                 return (

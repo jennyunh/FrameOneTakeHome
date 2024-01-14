@@ -7,3 +7,7 @@
     height: auto;
 }
 
+#month-name{
+    color: white;
+    font-size: 3.5vmin;
+}

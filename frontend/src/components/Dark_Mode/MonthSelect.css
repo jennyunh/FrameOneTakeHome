@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@600;700;800&family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap');
+
+
+
+
+
+.dark-select{
+    background-color: #313037;
+    color: #ffffff !important;
+    border-radius: 3vmin !important;
+}
+
+
+.dark-select::placeholder {
+    color: #ffffff;
+}
+
+.dark-select:hover {
+    outline: none;
+    /* box-shadow: inset 0.2rem 0.2rem 0.8rem #c8d0e7, inset -0.2rem -0.2rem 0.6rem white; */
+}
+
+
+
+#dark-month-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.dark-label{
+    color: white;
+}
+
+
+
+#dark-apply-button {
+    background-color: rgb(97, 87, 203);
+    color: #ffffff;
+    border: none;
+}
+
+
+#dark-apply-button{
+    margin: 10px;
+    transition: all 250ms ease-in-out;
+border-radius: 3vmin;
+}
+
+#dark-apply-button:hover {
+    background: rgb(111, 102, 207);
+    border: none !important;
+    color: #ffffff;
+}

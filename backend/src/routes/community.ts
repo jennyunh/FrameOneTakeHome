@@ -111,7 +111,18 @@ const getPointsByMonth = async (month: number) => {
 		$sort: {
 			totalPoints: -1
 			}
+	},
+
+	{
+		$project: {
+			name: 1,
+			logo: 1,
+			totalMembers: 1,
+			totalPoints: 1,
+			_id: 1
+			}
 	}
+
 
 
 

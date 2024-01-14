@@ -13,3 +13,4 @@ export interface Community {
     totalPoints?: number;
     totalMembers?: number;
 }
+
